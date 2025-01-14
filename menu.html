@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Rename Tool</title>
+    <style>
+        label, input, button {
+            margin-bottom: 10px;
+            display: block;
+        }
+        .input-group {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .input-group input[type="text"] {
+            flex: 1;
+            margin-right: 10px;
+        }
+        #logs {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+        }
+    </style>
+    <script>
+        // Function to dynamically update logs
+        function updateLogs(logs) {
+            const logsDiv = document.getElementById('logs');
+            logsDiv.textContent = logs;
+        }
+
+        // Function to handle file browser and update input fields
+        function openFileBrowser(inputId, fileInputId) {
+            const fileInput = document.getElementById(fileInputId);
+            fileInput.click(); // Trigger the hidden file input
+
+            fileInput.addEventListener("change", function () {
+                const selectedPath = fileInput.files[0]?.webkitRelativePath.split("/")[0] || "";
+                document.getElementById(inputId).value = selectedPath; // Update the text input with the selected path
+            });
+        }
+    </script>
+</head>
+<body>
+<h1>Quick Rename Tool</h1>
+<form action="/rename" method="post" onsubmit="return handleSubmit(event)">
+    <div class="input-group">
+        <label for="source">Source Directory:</label>
+        <input type="text" id="source" name="source" placeholder="Enter source directory">
+        <input type="file" id="sourcePicker" webkitdirectory style="display: none;">
+        <button type="button" onclick="openFileBrowser('source', 'sourcePicker')">Open File Browser</button>
+    </div>
+
+    <div class="input-group">
+        <label for="target">Target Directory:</label>
+        <input type="text" id="target" name="target" placeholder="Enter target directory">
+        <input type="file" id="targetPicker" webkitdirectory style="display: none;">
+        <button type="button" onclick="openFileBrowser('target', 'targetPicker')">Open File Browser</button>
+    </div>
+
+    <label for="name">New File Name:</label>
+    <input type="text" id="name" name="name" placeholder="Enter new file name">
+
+    <button type="submit">Submit</button>
+</form>
+
+<div id="logs">
+    Logs will appear here...
+</div>
+
+<script>
+    // Handle form submission and fetch logs from the server
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+        });
+
+        const logs = await response.text();
+        updateLogs(logs); // Update logs in the browser
+    }
+</script>
+</body>
+</html>

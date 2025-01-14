@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Rename Tool</title>
+    <style>
+        /* Drag and Drop Styling */
+        #drag-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .drag-area {
+            width: 45%;
+            height: 200px;
+            border: 2px dashed #aaa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin: 20px;
+        }
+
+        /* General Styling */
+        label, input, button {
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-group input[type="text"] {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        #logs {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+<h1>Quick Rename Tool with Drag & Drop</h1>
+
+<!-- Drag and Drop Areas -->
+<div id="drag-container">
+    <div id="source-drag-area" class="drag-area">
+        Drop Source Files/Folder Here
+    </div>
+    <div id="target-drag-area" class="drag-area">
+        Drop Target Files/Folder Here
+    </div>
+</div>
+
+<!-- Form Section -->
+<form action="/rename" method="post" onsubmit="return handleSubmit(event)">
+    <div class="input-group">
+        <label for="source">Source Directory:</label>
+        <input type="text" id="source" name="source" placeholder="Enter source directory">
+        <input type="file" id="sourcePicker" webkitdirectory style="display: none;">
+        <button type="button" onclick="openFileBrowser('source', 'sourcePicker')">Open File Browser</button>
+    </div>
+
+    <div class="input-group">
+        <label for="target">Target Directory:</label>
+        <input type="text" id="target" name="target" placeholder="Enter target directory">
+        <input type="file" id="targetPicker" webkitdirectory style="display: none;">
+        <button type="button" onclick="openFileBrowser('target', 'targetPicker')">Open File Browser</button>
+    </div>
+
+    <label for="name">New File Name:</label>
+    <input type="text" id="name" name="name" placeholder="Enter new file name">
+
+    <button type="submit">Submit</button>
+</form>
+
+<div id="logs">
+    Logs will appear here...
+</div>
+
+<script>
+    // Drag and Drop Functionality
+    const sourceDragArea = document.getElementById('source-drag-area');
+    const targetDragArea = document.getElementById('target-drag-area');
+    const draggableItem = document.getElementById('draggable-item');
+
+    function preventDefaultBehavior(event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    function handleDragEnter(event) {
+        preventDefaultBehavior(event);
+        event.currentTarget.style.borderColor = '#007bff';
+    }
+
+    function handleDragLeave(event) {
+        preventDefaultBehavior(event);
+        event.currentTarget.style.borderColor = '#aaa';
+    }
+
+    function handleDrop(event, inputId) {
+        preventDefaultBehavior(event);
+        const input = document.getElementById(inputId);
+        const files = event.dataTransfer.items;
+        if (files && files.length) {
+            input.value = "Dropped folder or files"; // Simulate an update. Adjust logic for real data.
+            updateLogs(`Dropped in ${inputId} with files: ${Array.from(files).map(item => item.kind).join(', ')}`);
+        }
+        event.currentTarget.style.borderColor = '#aaa';
+    }
+
+    // Attach Event Listeners for Drag and Drop
+    [sourceDragArea, targetDragArea].forEach((area, index) => {
+        const inputId = index === 0 ? 'source' : 'target';
+        area.addEventListener('dragenter', handleDragEnter);
+        area.addEventListener('dragover', preventDefaultBehavior);
+        area.addEventListener('dragleave', handleDragLeave);
+        area.addEventListener('drop', (event) => handleDrop(event, inputId));
+    });
+
+    draggableItem.addEventListener('dragstart', (event) => {
+        event.dataTransfer.setData('text/plain', 'placeholder-data'); // Custom draggable logic
+    });
+
+    // Logs Update Function
+    function updateLogs(logs) {
+        const logsDiv = document.getElementById('logs');
+        logsDiv.textContent = logs;
+    }
+
+    // Open File Browser Functionality
+    function openFileBrowser(inputId, fileInputId) {
+        const fileInput = document.getElementById(fileInputId);
+        fileInput.click(); // Trigger the hidden file input
+
+        fileInput.addEventListener("change", function () {
+            const selectedPath = fileInput.files[0]?.webkitRelativePath.split("/")[0] || "";
+            document.getElementById(inputId).value = selectedPath; // Update the text input with the selected path
+        });
+    }
+
+    // Form Submission with Logs
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+        });
+
+        const logs = await response.text();
+        updateLogs(logs); // Update logs in the browser
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop Example</title>
+    <style>
+        #drag-container {
+            width: 300px;
+            height: 200px;
+            border: 2px dashed #aaa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+        }
+        .draggable {
+            width: 50px;
+            height: 50px;
+            background-color: #007bff;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            user-select: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<div id="drag-container">
+    Drop Here
+</div>
+<div class="draggable" draggable="true" id="draggable-item">
+    Drag Me
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
